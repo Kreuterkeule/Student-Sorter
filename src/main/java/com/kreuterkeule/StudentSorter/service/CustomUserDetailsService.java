@@ -28,15 +28,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username.equals("admin")) {
-            System.out.println("admin user");
             return User.builder().username(adminUsername).password(passwordEncoder.encode(adminPassword)).roles(adminRole).build();
         }
         UserEntity user = userRepository.findByUsername(username);
         if (user == null) {
-            System.out.println("username not found");
             throw new UsernameNotFoundException(username);
         }
-        System.out.println("returning normal user" + user.getUsername());
         return User.builder().username(user.getUsername()).password(user.getPassword()).roles(user.getRole()).build();
     }
 }

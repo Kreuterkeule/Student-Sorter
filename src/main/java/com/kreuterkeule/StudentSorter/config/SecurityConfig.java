@@ -26,6 +26,8 @@ public class SecurityConfig {
                     try {
                         request
                                 .requestMatchers("/test/").permitAll()
+                                .requestMatchers("/api/client/**").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .anyRequest().hasRole("ADMIN")
                                 .and()
                                 .cors().configurationSource(request1 -> new CorsConfiguration().applyPermitDefaultValues());

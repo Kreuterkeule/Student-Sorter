@@ -18,8 +18,21 @@ public class UserEntity implements UserDetails {
     private String password;
     private String role; // ADMIN oder USER
     private String priorityMate;
+    private boolean bilingual;
+    private String WP;
     @ElementCollection
     private Map<Integer, String> fiveMatesPriorityName;
+
+    public Map<Integer, String> getBlacklistedMates() {
+        return blacklistedMates;
+    }
+
+    public void setBlacklistedMates(Map<Integer, String> blacklistedMates) {
+        this.blacklistedMates = blacklistedMates;
+    }
+
+    @ElementCollection
+    private Map<Integer, String> blacklistedMates;
     private boolean accExpired;
     private boolean locked;
     private boolean credExpired;
@@ -81,6 +94,10 @@ public class UserEntity implements UserDetails {
         this.enabled = enabled;
     }
 
+    public void addToBlacklist(String username) {
+        this.blacklistedMates.put(this.blacklistedMates.size() + 1, username);
+    }
+
     public UserEntity() {
     }
 
@@ -88,8 +105,11 @@ public class UserEntity implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.bilingual = false;
+        WP = "MINT"; //TODO: standard Wert, vielleicht nicht noetig?
         this.priorityMate = "";
         this.fiveMatesPriorityName = new HashMap<>();
+        this.blacklistedMates = new HashMap<>();
     }
 
     public long getId() {
@@ -135,5 +155,25 @@ public class UserEntity implements UserDetails {
     @Override
     public String getUsername() {
         return this.username;
+    }
+
+    public String getWP() {
+        return WP;
+    }
+
+    public void setWP(String WP) {
+        this.WP = WP;
+    }
+
+    public boolean isBilingual() {
+        return bilingual;
+    }
+
+    public void setBilingual(boolean bilingual) {
+        this.bilingual = bilingual;
+    }
+
+    public void deleteFromBlacklist(Integer id) {
+        blacklistedMates.remove(blacklistedMates.get(id - 1)); // starts at 0 as always
     }
 }
