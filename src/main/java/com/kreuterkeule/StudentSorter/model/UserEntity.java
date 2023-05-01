@@ -110,6 +110,10 @@ public class UserEntity implements UserDetails {
         this.priorityMate = "";
         this.fiveMatesPriorityName = new HashMap<>();
         this.blacklistedMates = new HashMap<>();
+        this.enabled = true;
+        this.accExpired = false;
+        this.credExpired = false;
+        this.locked = false;
     }
 
     public long getId() {

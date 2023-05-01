@@ -1,32 +1,45 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </nav>
+    <HeaderComponent v-bind:version="this.version"></HeaderComponent>
     <router-view/>
   </div>
 </template>
 
+<script>
+import HeaderComponent from './components/HeaderComponent.vue';
+
+export default {
+  data() {
+    return {
+      version: 'v.1.0',
+    };
+  },
+  components: { HeaderComponent },
+};
+</script>
+
 <style lang="scss">
-#app {
+body {
+  background-color: #222;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+  color: white;
 }
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+label {
+  display: flex;
+  flex-direction: column;
+}
+a {
+  color: lightgray;
+  &:hover{
+    color: rgb(88, 0, 77);
   }
+}
+.green {
+  color: greenyellow;
+}
+.orange {
+  color: orange;
 }
 </style>
