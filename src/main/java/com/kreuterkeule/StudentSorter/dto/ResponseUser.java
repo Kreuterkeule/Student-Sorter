@@ -7,10 +7,10 @@ public class ResponseUser {
 
     @Override
     public String toString() {
-        return "ResponseUser{" +
-                "username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", role='" + role + '\'' +
+        return "{\"" +
+                "username\":\"" + username + '"' +
+                ", \"password\":\"" + password + '"' +
+                ", \"role\":\"" + role + '"' +
                 '}';
     }
 

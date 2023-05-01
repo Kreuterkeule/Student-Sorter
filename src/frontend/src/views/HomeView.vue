@@ -15,7 +15,7 @@
       <router-link to="/help">help</router-link>
     </div>
     <div class="change-user-data-form" v-else>
-      <button @click.prevent="handleLogout()">logout</button>
+      <button class="logoutButton" @click.prevent="handleLogout()">logout</button>
       <div v-if="adminUser" class="admin-control">
         <h2>Admin Control</h2>
         <AdminControllComponent></AdminControllComponent>
@@ -45,8 +45,7 @@ export default {
   },
 
   mounted() {
-    console.log(`loggedIn? ${this.loggedIn}`);
-    console.log(`adminUser?${this.adminUser}`);
+
   },
 
   methods: {
@@ -54,22 +53,28 @@ export default {
       this.$store.commit('reset');
       this.$store.commit('setLoggedIn', false);
       this.$store.commit('setAdmin', false);
+      this.$store.commit('setUsername', '');
+      this.$store.commit('setPassword', '');
+      this.$store.commit('setAllUsers', []);
       this.$router.go();
     },
     async handleLogin() {
-      await BackendService.getUserInfo(this.login.username, this.login.password)
-        .then((response) => {
-          if (!response.data.locked && !response.data.accExpired && !response.data.credExpired && response.data.enabled) {
-            if (response.data.role === 'ADMIN') {
-              console.log('admin user detected');
-              this.$store.commit('setAdmin', true);
+      try {
+        await BackendService.getUserInfo(this.login.username, this.login.password)
+          .then((response) => {
+            if (!response.data.locked && !response.data.accExpired && !response.data.credExpired && response.data.enabled) {
+              if (response.data.role === 'ADMIN') {
+                this.$store.commit('setAdmin', true);
+              }
+              this.$store.commit('setLoggedIn', true);
+              this.$store.commit('setUsername', response.data.username);
+              this.$store.commit('setPassword', this.login.password); // no token since basic auth should do the trick for such application
+              this.$router.go();
             }
-            this.$store.commit('setLoggedIn', true);
-            this.$store.commit('setUsername', response.data.username);
-            this.$store.commit('setPassword', this.password); // no token since basic auth should do the trick for such application
-            this.$router.go();
-          }
-        });
+          });
+      } catch {
+        this.$store.commit('pushNotification', { head: 'Login fehlgeschlagen', text: 'falscher Nutzername oder Password, bitte ueberpruefe diese', type: 'bad' });
+      }
     },
   },
 
@@ -94,7 +99,6 @@ export default {
 <style lang="scss" scoped>
 .container {
   width: 100%;
-  height: 80vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,6 +127,24 @@ export default {
       background-color: lightgray;
       text-decoration: underline;
     }
+  }
+}
+.change-user-data-form, .client-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+button {
+  width: fit-content;
+}
+.logoutButton {
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: rgb(88, 0, 77);
+  &:hover {
+    background-color: rgb(228, 70, 220);
+    cursor: pointer;
   }
 }
 </style>

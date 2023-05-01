@@ -13,6 +13,10 @@ export default new Vuex.Store({
       username: '',
       password: '',
     },
+    notifyMessages: [],
+    admin: {
+      allUsers: [],
+    },
   },
   getters: {
   },
@@ -25,6 +29,7 @@ export default new Vuex.Store({
       state.userdata.username = '';
       state.userdata.isAdmin = false;
       state.userdata.password = '';
+      state.admin.allUsers = [];
     },
     setAdmin(state, bool) {
       state.userdata.isAdmin = bool;
@@ -34,6 +39,18 @@ export default new Vuex.Store({
     },
     setPassword(state, password) {
       state.userdata.password = password;
+    },
+    setAllUsers(state, allUsers) {
+      state.admin.allUsers = allUsers;
+    },
+    resetNotifyMessages(state) {
+      state.notifyMessages = [];
+    },
+    pushNotification(state, message) {
+      state.notifyMessages.push(message);
+    },
+    setNotifications(state, emptyArray) {
+      state.notifyMessages = emptyArray;
     },
   },
   actions: {

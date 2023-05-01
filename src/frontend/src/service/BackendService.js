@@ -16,6 +16,61 @@ class BackendService {
       },
     });
   }
+
+  createUsers(array, username, password) {
+    console.log(username + password);
+    console.log(array);
+    return axios.post(
+      `${BASE_URL}/api/admin/createUsers`,
+      {
+        userCount: 0, // not important
+        usernames: array,
+      },
+      {
+        headers: {
+          Authorization: this.makeBasicAuth(username, password),
+        },
+      },
+    );
+  }
+
+  getAllUsers(username, password) {
+    return axios.get(`${BASE_URL}/api/admin/getUsers`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  deleteUser(id, username, password) {
+    return axios.get(`${BASE_URL}/api/admin/delete?id=${id}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  createAdmin(newUsername, newPassword, username, password) {
+    return axios.post(`${BASE_URL}/api/admin/createAdmin`, {
+      username: newUsername,
+      password: newPassword,
+    }, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  createUser(newUsername, newPassword, username, password) {
+    return axios.post(`${BASE_URL}/api/admin/createUser`, {
+      username: newUsername,
+      password: newPassword,
+    }, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
 }
 
 export default new BackendService();

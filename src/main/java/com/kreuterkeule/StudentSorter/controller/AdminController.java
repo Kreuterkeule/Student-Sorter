@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequestMapping("/api/admin")
 @RestController
@@ -60,7 +57,7 @@ public class AdminController {
         userRepository.delete(deletedUser);
         return new ResponseEntity<>(new UserDto(deletedUser.getUsername(),
                 deletedUser.getPassword(),
-                deletedUser.getId()), HttpStatus.BAD_REQUEST); // return deleted User for debugging
+                deletedUser.getId()), HttpStatus.OK); // return deleted User for debugging
     }
     @PostMapping("createUsers")
     public ResponseEntity<CreateUsersResponseDto> createUsers(@RequestBody CreateUsersDto createUsersDto) {
