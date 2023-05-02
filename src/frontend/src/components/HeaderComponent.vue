@@ -57,6 +57,8 @@ export default {
   }
 }
 .notifications {
+  max-height: 90vh;
+  overflow-y: scroll;
   position: fixed;
   right: 20px;
   top: 20px;

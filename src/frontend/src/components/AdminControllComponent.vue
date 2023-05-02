@@ -139,6 +139,7 @@ export default {
 
           // handle created users
           this.$store.commit('setAllUsers', []);
+          this.createUsersResponse.createUsersSuccess = [];
           // eslint-disable-next-line no-restricted-syntax
           for (const createdUser of response.data.createdUsers) {
             this.createUsersResponse.createUsersSuccess.push(createdUser);

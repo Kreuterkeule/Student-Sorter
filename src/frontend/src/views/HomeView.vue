@@ -17,11 +17,12 @@
     <div class="change-user-data-form" v-else>
       <button class="logoutButton" @click.prevent="handleLogout()">logout</button>
       <div v-if="adminUser" class="admin-control">
-        <h2>Admin Control</h2>
+        <h2>Admin Control - {{ this.makeUsername(username) }}</h2>
         <AdminControllComponent></AdminControllComponent>
       </div>
       <div v-else class="client-control">
-        <h2>Welcome {{ username }}</h2>
+        <h2>Welcome {{ this.makeUsername(username) }}</h2>
+        <UserFormComponent></UserFormComponent>
       </div>
     </div>
   </div>
@@ -32,6 +33,7 @@
 /* eslint-disable max-len */
 import BackendService from '../service/BackendService';
 import AdminControllComponent from '../components/AdminControllComponent.vue';
+import UserFormComponent from '../components/UserFormComponent.vue';
 
 export default {
   name: 'HomeView',
@@ -49,6 +51,15 @@ export default {
   },
 
   methods: {
+    makeUsername(username) { // converts firstname.lastname to Fistname Lastname
+      let parsedUsername = '';
+      const usernameArray = username.split('.');
+      for (let i = 0; i < usernameArray.length; i += 1) {
+        usernameArray[i] = usernameArray[i].charAt(0).toUpperCase() + usernameArray[i].slice(1);
+      }
+      parsedUsername = usernameArray.join(' ');
+      return parsedUsername;
+    },
     handleLogout() {
       this.$store.commit('reset');
       this.$store.commit('setLoggedIn', false);
@@ -92,6 +103,7 @@ export default {
 
   components: {
     AdminControllComponent,
+    UserFormComponent,
   },
 };
 </script>
