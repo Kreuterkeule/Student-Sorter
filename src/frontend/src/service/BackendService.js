@@ -71,6 +71,73 @@ class BackendService {
       },
     });
   }
+
+  setBili(username, password, bili) {
+    let state = '';
+    if (bili) {
+      state = 'BILI';
+    } else {
+      state = 'NOT_BILI';
+    }
+    axios.get(`${BASE_URL}/api/client/changeBilingual?state=${state}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  checkUserExistance(username, password, prio) {
+    return axios.get(`${BASE_URL}/api/client/checkUser?username=${prio}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  setPrio(username, password, prio) {
+    return axios.get(`${BASE_URL}/api/client/changePriorityMate?username=${prio}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  setWP(username, password, wp) {
+    return axios.get(`${BASE_URL}/api/client/setWp?state=${wp}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  addToBlacklist(username, password, blackUser) {
+    return axios.get(`${BASE_URL}/api/client/addToBlacklist?username=${blackUser}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  resetBlacklist(username, password) {
+    return axios.get(`${BASE_URL}/api/client/resetBlacklist`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  setFive(username, password, array) {
+    const obj = {};
+    for (let i = 0; i < array.length; i += 1) {
+      obj[`name${i + 1}`] = array[i];
+    }
+    console.log(obj);
+    return axios.post(`${BASE_URL}/api/client/changeFiveMates`, obj, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
 }
 
 export default new BackendService();

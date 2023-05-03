@@ -3,7 +3,7 @@
   <div class="container">
     <h1>Student-Sorter {{ version }} - <a href="https://github.com/Kreuterkeule">Kreuterkeule</a></h1>
     <div v-if="messages.length > 0" class="notifications">
-      <button @click.prevent="handleClear()">clear</button>
+      <button @click.prevent="handleClear()">clear</button> else press ESC to clear
       <div :class="(message.type === 'good') ? 'good' : 'bad'" v-for="message of messages" :key="message.heading">
         <h1>{{ message.head }}</h1>
         <p>{{ message.text }}</p>
@@ -30,6 +30,12 @@ export default {
   },
 
   mounted() {
+    document.addEventListener('keydown', (event) => {
+      const name = event.key;
+      if (name === 'Escape') {
+        this.handleClear();
+      }
+    });
   },
 
   computed: {
@@ -57,6 +63,7 @@ export default {
   }
 }
 .notifications {
+  letter-spacing: normal;
   max-height: 90vh;
   overflow-y: scroll;
   position: fixed;

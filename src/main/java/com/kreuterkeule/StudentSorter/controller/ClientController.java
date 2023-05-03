@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @RequestMapping("api/client")
@@ -24,15 +25,18 @@ public class ClientController {
     @Autowired
     AuthenticatedUserService authenticatedUserService;
 
-    @PostMapping("changePriorityMate")
-    public ResponseEntity<String> changePriorityMate(@RequestBody UsernameDto changePriorityMateDto) {
-        UserEntity mate = userRepository.findByUsername(changePriorityMateDto.username);
+    @GetMapping("changePriorityMate")
+    public ResponseEntity<String> changePriorityMate(@RequestParam("username") String username) {
+        UserEntity mate = userRepository.findByUsername(username);
         if (mate == null) {
-            return new ResponseEntity<>("USER NON EXISTENT [" + changePriorityMateDto.username + "]", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("USER NON EXISTENT [" + username + "]", HttpStatus.BAD_REQUEST);
         }
         String clientUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity client = userRepository.findByUsername(clientUsername);
-        if (client.getFiveMatesPriorityName().containsValue(changePriorityMateDto.username)) {
+        if (client.getBlacklistedMates().containsValue(username)) {
+            return new ResponseEntity<>("NEW PRIO MATE NOT SET, CAUSE IS CONTAINED IN BLACKLIST", HttpStatus.OK);
+        }
+        if (client.getFiveMatesPriorityName().containsValue(username)) {
             client.setPriorityMate(mate.getUsername());
             userRepository.save(client);
             return new ResponseEntity<>("NEW PRIORITY MATE SET SUCCESSFULLY [" + mate.getUsername() + "], BUT MATE IS CONTAINED IN FIVE MATES", HttpStatus.OK);
@@ -52,6 +56,9 @@ public class ClientController {
         String clientUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity client = userRepository.findByUsername(clientUsername);
         for (String username : changeFiveMatesDto.fiveMates) {
+            if (client.getBlacklistedMates().containsValue(username)) {
+                return new ResponseEntity<>("NOT SET, ONE USER FROM BLACKLIST", HttpStatus.OK); // handled by client
+            }
             UserEntity mate = userRepository.findByUsername(username);
             if (mate == null) {
                 return new ResponseEntity<>("USER NON EXISTENT [" + username + "]", HttpStatus.BAD_REQUEST);
@@ -68,27 +75,34 @@ public class ClientController {
         }
         client.setFiveMatesPriorityName(fiveMatesMap);
         userRepository.save(client);
-        System.out.println("contains prio? : " + containsPriorityMate);
+        if (changeFiveMatesDto.fiveMates.size() > new HashSet<String>(changeFiveMatesDto.fiveMates).size()) {
+            return new ResponseEntity<>("NEW MATES SET SUCCESSFULLY, BUT THEY CONTAIN DUPLICATES", HttpStatus.OK);
+        }
         if (containsPriorityMate) {
             return new ResponseEntity<>("NEW MATES SET SUCCESSFULLY, BUT THEY CONTAIN THE PRIORITY MATE [" + client.getPriorityMate() + "]", HttpStatus.OK);
         }
         return new ResponseEntity<>("NEW MATES SET SUCCESSFULLY", HttpStatus.OK);
     }
 
-    @PostMapping("addToBlacklist")
-    public ResponseEntity<String> addToBlacklist(@RequestBody UsernameDto usernameDto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity client = userRepository.findByUsername(username);
-        if (userRepository.findByUsername(usernameDto.username) != null) {
-            client.addToBlacklist(usernameDto.username);
+    @GetMapping("addToBlacklist")
+    public ResponseEntity<String> addToBlacklist(@RequestParam("username") String username) {
+        UserEntity client = authenticatedUserService.getUserFromSecurityContext(SecurityContextHolder.getContext());
+        if (userRepository.findByUsername(username) != null) {
+            if (client.getFiveMatesPriorityName().containsValue(username)) {
+                return new ResponseEntity<>("NOT SET, CAUSE USER IN FIVE MATES", HttpStatus.OK); // OK cause handled by client
+            }
+            if (client.getPriorityMate().equals(username)) {
+                return new ResponseEntity<>("NOT SET, CAUSE USER IS PRIO USER", HttpStatus.OK); // OK cause handled by client
+            }
+            client.addToBlacklist(username);
             userRepository.save(client);
-            return new ResponseEntity<>("ADDED [" + usernameDto.username + "] SUCCESSFULLY", HttpStatus.OK);
+            return new ResponseEntity<>("ADDED [" + username + "] SUCCESSFULLY", HttpStatus.OK);
         }
         return new ResponseEntity<>("ERROR: USER NOT FOUND", HttpStatus.BAD_REQUEST);
     }
 
     // not sure may make errors maybe just use a reset function instead
-    @GetMapping("deleteFromBlacklist")
+    @GetMapping("deleteFromBlacklist") // not used yet
     public ResponseEntity<String> deleteFromBlacklist(@RequestParam("id") Integer id) {
         UserEntity client = authenticatedUserService.getUserFromSecurityContext(SecurityContextHolder.getContext());
         String toDelete = client.getBlacklistedMates().get(id - 1); // to delete user
@@ -137,6 +151,30 @@ public class ClientController {
             return new ResponseEntity<>(null /* client */, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(client, HttpStatus.OK);
+    }
+
+    @GetMapping("setWp")
+    public ResponseEntity<String> setWp(@RequestParam("state") String wpSelect) {
+        System.out.println(wpSelect);
+        if (!wpSelect.equals("MINT") && !wpSelect.equals("KLAR")) { // .equals because you need that with strings
+            return new ResponseEntity<>("ERROR: unknown state", HttpStatus.BAD_REQUEST);
+        }
+        UserEntity user = authenticatedUserService.getUserFromSecurityContext(SecurityContextHolder.getContext());
+        user.setWP(wpSelect);
+        userRepository.save(user);
+        return new ResponseEntity<>("SUCCESS: wp set to " + wpSelect, HttpStatus.OK);
+    }
+
+    @GetMapping("checkUser")
+    public ResponseEntity<String> checkUser(@RequestParam("username") String username) {
+        UserEntity requestUser = userRepository.findByUsername(username);
+        if (requestUser == null) {
+            return new ResponseEntity<>("false", HttpStatus.OK);
+        }
+        if (!requestUser.getRole().equals("USER")) {
+            return new ResponseEntity<>("false", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("true", HttpStatus.OK);
     }
 
 }

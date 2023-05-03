@@ -4,14 +4,16 @@
     <div class="create-users-form">
       <h2>Create Users</h2> <!-- maybe check user existance before committing needing a rest endpoint for that here -->
       <div class="admin-form">
-        <label for="usernames">Usernames (seperated by ',' need to be unique f.e 'regine.teschke' passwords are generated automatically and need to be copied afterwards since just their hashes are stored for security reasons!)
-          <input type="text" name="usernames" id="usernames" placeholder="usernames" required v-model="createUsers">
-        </label>
-        <button type="submit" @click="handleCreateUsers()">Create</button>
+        <form>
+          <label for="usernames">Usernames (seperated by ',' need to be unique f.e 'regine.teschke' passwords are generated automatically and need to be copied afterwards since just their hashes are stored for security reasons!)
+            <input type="text" name="usernames" id="usernames" placeholder="usernames" required v-model="createUsers">
+          </label>
+          <button type="submit" @click.prevent="handleCreateUsers()">Create</button>
+        </form>
       </div>
       <div class="success-users" v-if="createUsersResponse.createUsersSuccess.length > 0">
         <h2 class="green">Success creating: </h2> <!-- show if list not empty -->
-        <table>
+        <table id="successUsersTable">
           <tr>
             <th>username</th>
             <th>password</th>
@@ -23,6 +25,7 @@
             <td>{{ user.role }}</td>
           </tr>
         </table>
+        <button @click.prevent="downloadCsv()">Export CSV</button>
       </div>
       <div v-if="createUsersResponse.createUsersError.length > 0" class="error-users"> <!-- check if list empty -->
         <h2 class="orange">Errors creating: </h2>
@@ -113,6 +116,37 @@ export default {
   },
 
   methods: {
+    downloadCsv(separator = ',') {
+      // thanks to Calumah@StackOverflow (https://stackoverflow.com/questions/15547198/export-html-table-to-csv-using-vanilla-javascript)
+      // Select rows from table_id
+      const rows = document.querySelectorAll('#successUsersTable tr');
+      // Construct csv
+      const csv = [];
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = [];
+        const cols = rows[i].querySelectorAll('td, th');
+        for (let j = 0; j < cols.length; j += 1) {
+          // Clean innertext to remove multiple spaces and jumpline (break csv)
+          let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ');
+          // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+          data = data.replace(/"/g, '""');
+          // Push escaped string
+          row.push(`"${data}"`);
+        }
+        csv.push(row.join(separator));
+      }
+      const csvString = csv.join('\n');
+      // Download it
+      const filename = `export_createdUsers_${new Date().toLocaleDateString()}.csv`;
+      const link = document.createElement('a');
+      link.style.display = 'none';
+      link.setAttribute('target', '_blank');
+      link.setAttribute('href', `data:text/csv;charset=utf-8,${encodeURIComponent(csvString)}`);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
     async handleCreateUsers() {
       let usersToCreateArr = this.createUsers.split(',');
       // eslint-disable-next-line no-restricted-syntax
@@ -144,7 +178,7 @@ export default {
           for (const createdUser of response.data.createdUsers) {
             this.createUsersResponse.createUsersSuccess.push(createdUser);
           }
-          this.$store.commit('pushNotification', { head: 'UsersCreated', text: 'see tables and COPY PASSWORDS!!!', type: 'good' });
+          this.$store.commit('pushNotification', { head: 'Users Created', text: 'Unbedingt die passwoerter kopieren oder als csv exportieren, sonst sie sind verloren', type: 'good' });
           this.refreshPending();
         });
     },
