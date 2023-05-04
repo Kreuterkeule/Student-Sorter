@@ -18,8 +18,6 @@ class BackendService {
   }
 
   createUsers(array, username, password) {
-    console.log(username + password);
-    console.log(array);
     return axios.post(
       `${BASE_URL}/api/admin/createUsers`,
       {
@@ -44,6 +42,22 @@ class BackendService {
 
   deleteUser(id, username, password) {
     return axios.get(`${BASE_URL}/api/admin/delete?id=${id}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  enable(toEnalbe, username, password) {
+    return axios.get(`${BASE_URL}/api/admin/enable?username=${toEnalbe}`, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  disable(toDisable, username, password) {
+    return axios.get(`${BASE_URL}/api/admin/disable?username=${toDisable}`, {
       headers: {
         Authorization: this.makeBasicAuth(username, password),
       },
@@ -131,8 +145,15 @@ class BackendService {
     for (let i = 0; i < array.length; i += 1) {
       obj[`name${i + 1}`] = array[i];
     }
-    console.log(obj);
     return axios.post(`${BASE_URL}/api/client/changeFiveMates`, obj, {
+      headers: {
+        Authorization: this.makeBasicAuth(username, password),
+      },
+    });
+  }
+
+  done(username, password) {
+    return axios.get(`${BASE_URL}/api/client/done`, {
       headers: {
         Authorization: this.makeBasicAuth(username, password),
       },

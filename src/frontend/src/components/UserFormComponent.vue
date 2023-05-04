@@ -68,6 +68,7 @@
         <li v-for="user of userBlacklist" :key="user">{{ user }}</li>
       </ul>
     </div>
+    <button @click.prevent="done()">Bestaetigen</button>
   </div>
 </template>
 
@@ -103,10 +104,13 @@ export default {
   },
 
   methods: {
+    async done() {
+      await BackendService.done(this.username, this.password);
+      this.$store.commit('pushNotification', { head: 'Fertig!', text: 'Es sind jetzt keine weiteren eingaben moeglich', type: 'good' });
+    },
     async fetchUserData() {
       await BackendService.getUserInfo(this.username, this.password)
         .then((response) => {
-          console.log(response.data);
           this.userBili = response.data.bilingual;
           this.userPrio = response.data.priorityMate;
           this.userWP = response.data.wp;
@@ -170,7 +174,6 @@ export default {
       for (const username of existingUsers) {
         await BackendService.addToBlacklist(this.username, this.password, username)
           .then((response) => {
-            console.log(response.data);
             if (response.data.includes('NOT SET, CAUSE USER IN FIVE MATES')) {
               this.$store.commit('pushNotification', { head: 'Nutzer in Wunschliste', text: `nutzer ${username.toUpperCase()} nicht gesetzt, er befindet sich in der wunschliste`, type: 'bad' });
             }

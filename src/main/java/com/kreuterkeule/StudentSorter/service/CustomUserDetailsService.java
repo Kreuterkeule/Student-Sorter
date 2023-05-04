@@ -34,6 +34,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException(username);
         }
+        if (!user.isEnabled()) {
+            throw new UsernameNotFoundException(username);
+        }
         return User.builder().username(user.getUsername()).password(user.getPassword()).roles(user.getRole()).build();
     }
 }

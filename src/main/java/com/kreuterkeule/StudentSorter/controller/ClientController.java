@@ -5,6 +5,7 @@ import com.kreuterkeule.StudentSorter.dto.UsernameDto;
 import com.kreuterkeule.StudentSorter.model.UserEntity;
 import com.kreuterkeule.StudentSorter.repository.UserRepository;
 import com.kreuterkeule.StudentSorter.service.AuthenticatedUserService;
+import com.sun.net.httpserver.Authenticator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -175,6 +176,14 @@ public class ClientController {
             return new ResponseEntity<>("false", HttpStatus.OK);
         }
         return new ResponseEntity<>("true", HttpStatus.OK);
+    }
+
+    @GetMapping("done")
+    public ResponseEntity<String> done() {
+        UserEntity client = authenticatedUserService.getUserFromSecurityContext(SecurityContextHolder.getContext());
+        client.setEnabled(false);
+        userRepository.save(client);
+        return new ResponseEntity<>("SUCCESS, YOU ARE NOW DISABLED", HttpStatus.OK);
     }
 
 }

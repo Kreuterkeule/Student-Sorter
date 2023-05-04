@@ -2,10 +2,28 @@
 <template>
   <div class="container">
     <div class="create-users-form">
+      <button @click.prevent="generateClasses()">Klassen Generieren</button>
+      <div class="class-results">
+        <table>
+          <tr>
+            <!-- name ?bili ?mint... -->
+          </tr>
+          <tr>
+            <!-- schueler liste -->
+          </tr>
+        </table>
+      </div>
+      <button @click.prevent="refreshPending()">refresh</button>
+      <div class="review">
+        {{ computeLeft }} Leute noch nicht abgestimmt:
+        <ul>
+          <li v-for="user of left" :key="user.username">{{ user.username }}</li>
+        </ul>
+      </div>
       <h2>Create Users</h2> <!-- maybe check user existance before committing needing a rest endpoint for that here -->
       <div class="admin-form">
         <form>
-          <label for="usernames">Usernames (seperated by ',' need to be unique f.e 'regine.teschke' passwords are generated automatically and need to be copied afterwards since just their hashes are stored for security reasons!)
+          <label for="usernames">Usernames (seperated by ',' need to be unique f.e 'username.password' passwords are generated automatically and need to be copied afterwards since just their hashes are stored for security reasons!)
             <input type="text" name="usernames" id="usernames" placeholder="usernames" required v-model="createUsers">
           </label>
           <button type="submit" @click.prevent="handleCreateUsers()">Create</button>
@@ -25,7 +43,7 @@
             <td>{{ user.role }}</td>
           </tr>
         </table>
-        <button @click.prevent="downloadCsv()">Export CSV</button>
+        <button @click.prevent="downloadCsv('#successUsersTable')">Export CSV</button>
       </div>
       <div v-if="createUsersResponse.createUsersError.length > 0" class="error-users"> <!-- check if list empty -->
         <h2 class="orange">Errors creating: </h2>
@@ -75,13 +93,20 @@
           <th>id</th>
           <th>username</th>
           <th>role</th>
+          <th>enabled?</th>
+          <th></th>
+          <th></th>
           <th></th>
         </tr>
         <tr v-for="user of allUsers" :key="user.id">
           <td>{{ user.id }}</td>
           <td>{{ user.username }}</td>
           <td>{{ user.role }}</td>
+          <td style="color: green;" v-if="user.enabled">ja</td>
+          <td style="color: red;" v-else>nein</td>
           <td><button class="deleteUserButton" @click.prevent="handleDeleteUser(user.id)">Delete</button></td>
+          <td><button class="enableButton" @click.prevent="enableUser(user.username)">Enable</button></td>
+          <td><button class="disableButton" @click.prevent="disableUser(user.username)">Disable</button></td>
         </tr>
       </table>
     </div>
@@ -111,15 +136,19 @@ export default {
     };
   },
 
-  moutned() {
-    this.refreshPending();
+  async moutned() {
+    await this.refreshPending();
+    await this.refreshPending();
   },
 
   methods: {
-    downloadCsv(separator = ',') {
+    async generateClasses() {
+      console.log('genrating');
+    },
+    downloadCsv(id, separator = ',') {
       // thanks to Calumah@StackOverflow (https://stackoverflow.com/questions/15547198/export-html-table-to-csv-using-vanilla-javascript)
       // Select rows from table_id
-      const rows = document.querySelectorAll('#successUsersTable tr');
+      const rows = document.querySelectorAll(`${id} tr`);
       // Construct csv
       const csv = [];
       for (let i = 0; i < rows.length; i += 1) {
@@ -230,13 +259,20 @@ export default {
       BackendService.deleteUser(id, this.username, this.password)
         .then((response) => {
           if (response.status === 200) {
-            console.log('delete success');
             this.$store.commit('pushNotification', { head: 'Deleted Successful', text: '', type: 'good' });
           } else {
             this.$store.commit('pushNotification', { head: 'Error', text: `Couldn't delete user with id${id}`, type: 'bad' });
           }
           this.refreshPending();
         });
+    },
+    async enableUser(username) {
+      await BackendService.enable(username, this.username, this.password);
+      this.refreshPending();
+    },
+    async disableUser(username) {
+      await BackendService.disable(username, this.username, this.password);
+      this.refreshPending();
     },
   },
 
@@ -249,6 +285,19 @@ export default {
     },
     password() {
       return this.$store.state.userdata.password;
+    },
+    computeLeft() {
+      return this.left.length;
+    },
+    left() {
+      const left = [];
+      /* eslint-disable-next-line */
+      for (const user of this.allUsers) {
+        if (user.enabled && user.role === 'USER') {
+          left.push(user);
+        }
+      }
+      return left;
     },
   },
 };
@@ -323,6 +372,26 @@ th {
   }
   .deleteUserButton {
     background-color: red;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    &:hover {
+      background-color: rosybrown;
+      cursor: pointer;
+    }
+  }
+  .enableButton {
+    background-color: green;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    &:hover {
+      background-color: lightgreen;
+      cursor: pointer;
+    }
+  }
+  .disableButton {
+    background-color: darkorange;
     border: none;
     border-radius: 8px;
     padding: 8px 16px;

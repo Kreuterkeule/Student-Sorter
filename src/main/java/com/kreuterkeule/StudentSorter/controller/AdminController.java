@@ -80,4 +80,26 @@ public class AdminController {
     public ResponseEntity<List<UserEntity>> getUsers() {
         return new ResponseEntity<>(userRepository.findAll(), HttpStatus.OK);
     }
+
+    @GetMapping("/enable")
+    public ResponseEntity<String> enableUser(@RequestParam("username") String username) {
+        UserEntity toEnable = userRepository.findByUsername(username);
+        if (toEnable == null) {
+            return new ResponseEntity<>("USERNAME NOT FOUND", HttpStatus.BAD_REQUEST);
+        }
+        toEnable.setEnabled(true);
+        userRepository.save(toEnable);
+        return new ResponseEntity<>("SUCCESS USER [" + username + "] IS NOW ENABLED", HttpStatus.OK);
+    }
+
+    @GetMapping("/disable")
+    public ResponseEntity<String> disableUser(@RequestParam("username") String username) {
+        UserEntity toDisable = userRepository.findByUsername(username);
+        if (toDisable == null) {
+            return new ResponseEntity<>("USERNAME NOT FOUND", HttpStatus.BAD_REQUEST);
+        }
+        toDisable.setEnabled(false);
+        userRepository.save(toDisable);
+        return new ResponseEntity<>("SUCCESS USER [" + username + "] IS NOW ENABLED", HttpStatus.OK);
+    }
 }
