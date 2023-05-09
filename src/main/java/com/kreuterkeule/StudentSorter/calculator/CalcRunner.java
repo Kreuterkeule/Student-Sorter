@@ -5,7 +5,6 @@ import com.kreuterkeule.StudentSorter.calculator.entity.CalcUser;
 import com.kreuterkeule.StudentSorter.model.UserEntity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +36,7 @@ public class CalcRunner {
     }
 
     public Map<CalcClass, List<CalcUser>> run() {
-
-        int bilicount = 3;
-
-        return new HashMap<>();
+        return null;
     }
 
 }
