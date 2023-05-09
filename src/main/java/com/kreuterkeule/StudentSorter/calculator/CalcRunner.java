@@ -26,7 +26,7 @@ public class CalcRunner {
             calcUser.setPrio(user.getPriorityMate());
             calcUser.setName(user.getUsername());
             calcUser.setBili(user.isBilingual());
-            retList.add(calcUser); //Test hi hier bin ich
+            retList.add(calcUser);
         }
         for (UserEntity user : users) {
 
